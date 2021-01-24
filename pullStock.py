@@ -22,7 +22,7 @@ def download_stock(stock):
         stock_df.to_csv(output_name)
     except:
         # bad_names.append(stock)
-        print('bad: %s' % (stock))
+        print('bad: %s' % stock)
 
 
 def pull():
