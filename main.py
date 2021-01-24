@@ -1,13 +1,14 @@
-import streamlit as st
+import os
+from datetime import timedelta
+from glob import glob
+
+import keras
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import plotly.express as px
-from glob import glob
-import os
-import keras
-import numpy as np
+import streamlit as st
 from sklearn.preprocessing import MinMaxScaler
-import matplotlib.pyplot as plt
-from datetime import timedelta
 from tqdm import tqdm
 
 st.write("""

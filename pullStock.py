@@ -1,11 +1,10 @@
-from datetime import datetime
+import os
 from concurrent import futures
+from datetime import datetime
+from glob import glob
 
 import pandas as pd
-from pandas import DataFrame
 import pandas_datareader.data as web
-import os
-from glob import glob
 
 """ set the download window """
 now_time = datetime.now()

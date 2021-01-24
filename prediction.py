@@ -1,15 +1,14 @@
-import pandas as pd
-import numpy as np
-import math
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import train_test_split
-from keras.models import Sequential
-from keras.layers import Dense, LSTM
-import matplotlib.pyplot as plt
-from keras import backend
-import keras
-from glob import glob
 import os
+from glob import glob
+
+import keras
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from keras import backend
+from keras.layers import Dense, LSTM
+from keras.models import Sequential
+from sklearn.preprocessing import MinMaxScaler
 
 plt.style.use('fivethirtyeight')
 features = ['High', 'Low', 'Open', 'Close']
