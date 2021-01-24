@@ -98,8 +98,8 @@ def run():
             rmse_mean = np.mean(rmse)
             print(rmse_mean)
 
-        train = df[:training_data_len]
-        valid = df[training_data_len:]
+        # train = df[:training_data_len]
+        # valid = df[training_data_len:]
         # plot_stock(train, valid, predictions)
 
         last_window_size_days = df[-window_size:].filter(features).values

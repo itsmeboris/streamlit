@@ -11,11 +11,6 @@ import streamlit as st
 from sklearn.preprocessing import MinMaxScaler
 from tqdm import tqdm
 
-st.write("""
-# Stock Price Display
-This app Displays the **Stocks features**
-""")
-
 
 def user_input_features(df):
     stocks_name = st.sidebar.multiselect('Name', list(df['Name'].unique()), default=['AAPL'])
@@ -43,6 +38,10 @@ window_size = 80
 st.sidebar.header('User Input Features')
 stocks_name, key, start_date, end_date, stock_profit_range, predict, future_prediction = user_input_features(stocks)
 df = stocks.copy()
+st.write(f"""
+# Stock Price Display
+This app Displays the **Stocks features** of {len(list(df['Name'].unique()))} different stocks
+""")
 df = df[(df['Name'].isin(stocks_name)) & (df['Date'] >= start_date) & (df['Date'] <= end_date)]
 
 if len(df) == 0 or len(key) == 0:
@@ -85,7 +84,7 @@ else:
 
         st.write(fig)
 
-    if predict == 'Yes':
+    if predict == 'Yes' and any([stock_name in models for stock_name in stocks_name]):
         st.write(f"""Now we want to predict for {future_prediction} days""")
         for stock_name in stocks_name:
             if stock_name in models:
