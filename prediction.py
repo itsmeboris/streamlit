@@ -37,7 +37,6 @@ def run(tech_list):
     window_size = 80
     predicted = [s.split('.')[0][6:] for s in glob(os.path.join('model', '*.h5'))]
     tech_list = [x for x in tech_list if x not in predicted]
-
     for corp in tech_list:
         df = rdf[rdf['Name'] == corp][features]
         today = df[-1:].values
@@ -45,7 +44,7 @@ def run(tech_list):
         dataset = df.dropna().values
         if len(dataset) < window_size:
             continue
-        print(f"Last Date is: {list(rdf[rdf['Name'] == corp]['Date'][-1:])[0]}")
+        # print(f"Last Date is: {list(rdf[rdf['Name'] == corp]['Date'][-1:])[0]}")
         scaler = MinMaxScaler(feature_range=(0, 1))
         scaled_data = scaler.fit_transform(dataset)
         training_data_len = int(np.ceil(len(dataset) * .8))
