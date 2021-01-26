@@ -19,9 +19,9 @@ def user_input_features(df):
     start_date = st.sidebar.date_input('Start Date', pd.to_datetime(start_time))
     end_date = st.sidebar.date_input('End Date')
     # predict = st.sidebar.radio('Predict', ['No', 'Yes'])
-    future_prediction = st.sidebar.slider('Days to predict', 1, 200, 10)
+    # future_prediction = st.sidebar.slider('Days to predict', 1, 200, 10)
     return stocks_name, key, pd.to_datetime(start_date), pd.to_datetime(
-        end_date), stock_profit_range, 'No', future_prediction
+        end_date), stock_profit_range, 'No', 0
 
 
 @st.cache
