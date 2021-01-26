@@ -1,5 +1,5 @@
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime
 from glob import glob
 from pullStock import pull
 
@@ -14,10 +14,12 @@ from tqdm import tqdm
 
 
 def user_input_features(df):
+    now_time = datetime.now()
+    start_time = datetime(now_time.year - 10, now_time.month, now_time.day)
     stocks_name = st.sidebar.multiselect('Name', list(df['Name'].unique()), default=['AAPL'])
     stock_profit_range = st.sidebar.selectbox('Type', ('Day', 'Month', 'Quarter', 'Year'))
     key = st.sidebar.multiselect('Key', ('High', 'Low', 'Open', 'Close', 'Adj Close'), default='Close')
-    start_date = st.sidebar.date_input('Start Date', pd.to_datetime('2011-01-21'))
+    start_date = st.sidebar.date_input('Start Date', pd.to_datetime(start_time))  # pd.to_datetime('2011-01-21'))
     end_date = st.sidebar.date_input('End Date')
     predict = st.sidebar.radio('Predict', ['No', 'Yes'])
     future_prediction = st.sidebar.slider('Days to predict', 1, 200, 10)
@@ -94,7 +96,8 @@ else:
                 scaler = MinMaxScaler(feature_range=(0, 1))
                 features = ['High', 'Low', 'Open', 'Close']
                 scaled_data = scaler.fit_transform(df[df['Name'] == stock_name][features].values)
-                last_window_size_days = df[df['Name'] == stock_name][-window_size:].filter(['High', 'Low', 'Open', 'Close']).values
+                last_window_size_days = df[df['Name'] == stock_name][-window_size:].filter(
+                    ['High', 'Low', 'Open', 'Close']).values
                 future = []
                 for i in tqdm(range(future_prediction)):
                     last_window_size_days_scaled = scaler.transform(last_window_size_days)
@@ -103,8 +106,9 @@ else:
                     X_test = np.reshape(X_test, (1, window_size, 4))
                     pred_price = mdl.predict(X_test)
                     future.extend(scaler.inverse_transform(pred_price))
-                    last_window_size_days = np.reshape(np.append([last_window_size_days], scaler.inverse_transform(pred_price)),
-                                               (window_size + i + 1, 4))
+                    last_window_size_days = np.reshape(
+                        np.append([last_window_size_days], scaler.inverse_transform(pred_price)),
+                        (window_size + i + 1, 4))
 
                 future = pd.DataFrame(future, columns=['High', 'Low', 'Open', 'Close'])
                 future.index = [list(df[df['Name'] == stock_name]['Date'][-1:])[0] + timedelta(days=i + 1)

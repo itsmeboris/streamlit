@@ -8,7 +8,7 @@ import pandas_datareader.data as web
 
 """ set the download window """
 now_time = datetime.now()
-start_time = datetime(now_time.year - 5, now_time.month, now_time.day)
+start_time = datetime(now_time.year - 10, now_time.month, now_time.day)
 
 
 def download_stock(stock):
