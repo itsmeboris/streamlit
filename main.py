@@ -1,5 +1,7 @@
 from datetime import timedelta, datetime
 from prediction import run
+from glob import glob
+import os
 
 import keras
 import matplotlib.pyplot as plt
@@ -12,16 +14,16 @@ from sklearn.preprocessing import MinMaxScaler
 
 def user_input_features(df):
     now_time = datetime.now()
-    start_time = datetime(now_time.year - 10, now_time.month, now_time.day)
+    start_time = datetime(now_time.year - 5, now_time.month, now_time.day)
     stocks_name = st.sidebar.multiselect('Name', list(df['Name'].unique()), default=['AAPL'])
     stock_profit_range = st.sidebar.selectbox('Type', ('Day', 'Month', 'Quarter', 'Year'))
     key = st.sidebar.multiselect('Key', ('High', 'Low', 'Open', 'Close', 'Adj Close'), default='Close')
     start_date = st.sidebar.date_input('Start Date', pd.to_datetime(start_time))
     end_date = st.sidebar.date_input('End Date')
-    # predict = st.sidebar.radio('Predict', ['No', 'Yes'])
-    # future_prediction = st.sidebar.slider('Days to predict', 1, 200, 10)
+    predict = st.sidebar.radio('Predict', ['No', 'Yes'])
+    future_prediction = st.sidebar.slider('Days to predict', 1, 200, 10)
     return stocks_name, key, pd.to_datetime(start_date), pd.to_datetime(
-        end_date), stock_profit_range, 'No', 0
+        end_date), stock_profit_range, predict, future_prediction
 
 
 @st.cache
@@ -30,11 +32,13 @@ def get_data():
     df['Date'] = pd.to_datetime(df['Date'])
     return df
 
+
 @st.cache
 def build_model(tech_list):
     run(tech_list)
 
 
+models = [s.split('.')[0][6:] for s in glob(os.path.join('model', '*.h5'))]
 stocks = get_data()
 window_size = 80
 
@@ -87,39 +91,39 @@ else:
 
         st.write(fig)
 
-    if predict == 'Yes': #and any([stock_name in models for stock_name in stocks_name]):
-        build_model(stocks_name)
+    if predict == 'Yes' and any([stock_name in models for stock_name in stocks_name]):
         st.write(f"""Now we want to predict for {future_prediction} days""")
         for stock_name in stocks_name:
-            mdl = keras.models.load_model(f'model/{stock_name}.h5')
-            scaler = MinMaxScaler(feature_range=(0, 1))
-            features = ['High', 'Low', 'Open', 'Close']
-            scaled_data = scaler.fit_transform(df[df['Name'] == stock_name][features].values)
-            last_window_size_days = df[df['Name'] == stock_name][-window_size:].filter(
-                ['High', 'Low', 'Open', 'Close']).values
-            future = []
-            for i in range(future_prediction):
-                last_window_size_days_scaled = scaler.transform(last_window_size_days)
-                X_test = [last_window_size_days_scaled[i:]][0]
-                X_test = np.array(X_test)
-                X_test = np.reshape(X_test, (1, window_size, 4))
-                pred_price = mdl.predict(X_test)
-                future.extend(scaler.inverse_transform(pred_price))
-                last_window_size_days = np.reshape(
-                    np.append([last_window_size_days], scaler.inverse_transform(pred_price)),
-                    (window_size + i + 1, 4))
+            if stock_name in models:
+                mdl = keras.models.load_model(f'model/{stock_name}.h5')
+                scaler = MinMaxScaler(feature_range=(0, 1))
+                features = ['High', 'Low', 'Open', 'Close']
+                scaled_data = scaler.fit_transform(df[df['Name'] == stock_name][features].values)
+                last_window_size_days = df[df['Name'] == stock_name][-window_size:].filter(
+                    ['High', 'Low', 'Open', 'Close']).values
+                future = []
+                for i in range(future_prediction):
+                    last_window_size_days_scaled = scaler.transform(last_window_size_days)
+                    X_test = [last_window_size_days_scaled[i:]][0]
+                    X_test = np.array(X_test)
+                    X_test = np.reshape(X_test, (1, window_size, 4))
+                    pred_price = mdl.predict(X_test)
+                    future.extend(scaler.inverse_transform(pred_price))
+                    last_window_size_days = np.reshape(
+                        np.append([last_window_size_days], scaler.inverse_transform(pred_price)),
+                        (window_size + i + 1, 4))
 
-            future = pd.DataFrame(future, columns=['High', 'Low', 'Open', 'Close'])
-            future.index = [list(df[df['Name'] == stock_name]['Date'][-1:])[0] + timedelta(days=i + 1)
-                            for i in range(future_prediction)]
-            st.write(f"""Showing Plots for {stock_name}""")
-            fig = plt.figure(figsize=(30, 15))
-            for i, key in enumerate(['High', 'Low', 'Open', 'Close'], 1):
-                plt.subplot(2, 2, i)
-                plt.title(f'{key} value')
-                plt.xlabel('Date', fontsize=18)
-                plt.ylabel('Price USD ($)', fontsize=18)
-                plt.plot(df[df['Name'] == stock_name]['Date'], df[df['Name'] == stock_name][key])
-                plt.plot(future[key])
-                plt.legend(['Train', 'Future Prediction'], loc='lower right')
-            st.write(fig)
+                future = pd.DataFrame(future, columns=['High', 'Low', 'Open', 'Close'])
+                future.index = [list(df[df['Name'] == stock_name]['Date'][-1:])[0] + timedelta(days=i + 1)
+                                for i in range(future_prediction)]
+                st.write(f"""Showing Plots for {stock_name}""")
+                fig = plt.figure(figsize=(30, 15))
+                for i, key in enumerate(['High', 'Low', 'Open', 'Close'], 1):
+                    plt.subplot(2, 2, i)
+                    plt.title(f'{key} value')
+                    plt.xlabel('Date', fontsize=18)
+                    plt.ylabel('Price USD ($)', fontsize=18)
+                    plt.plot(df[df['Name'] == stock_name]['Date'], df[df['Name'] == stock_name][key])
+                    plt.plot(future[key])
+                    plt.legend(['Train', 'Future Prediction'], loc='lower right')
+                st.write(fig)

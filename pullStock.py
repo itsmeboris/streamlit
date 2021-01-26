@@ -8,7 +8,7 @@ import pandas_datareader.data as web
 
 """ set the download window """
 now_time = datetime.now()
-start_time = datetime(now_time.year - 10, now_time.month, now_time.day)
+start_time = datetime(now_time.year - 5, now_time.month, now_time.day)
 
 
 def download_stock(stock):
@@ -53,3 +53,6 @@ def pull():
     files = glob(os.path.join('individual_stocks_5yr', '*.csv'))
     df = pd.concat([pd.DataFrame(pd.read_csv(file, index_col='Date')) for file in files])
     df.to_csv('individual_stocks_5yr.csv')
+
+
+pull()

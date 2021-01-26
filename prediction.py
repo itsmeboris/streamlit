@@ -58,7 +58,6 @@ def run(tech_list):
 
         x_train, y_train = np.array(x_train), np.array(y_train)
         x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], dataset.shape[1]))
-        # print(x_train.shape)
 
         model = Sequential()
         model.add(LSTM(window_size, return_sequences=True, input_shape=(x_train.shape[1], x_train.shape[2])))
@@ -76,8 +75,8 @@ def run(tech_list):
             if rmse_mean < 5:
                 break
 
-            history = model.fit(x_train, y_train, batch_size=40, epochs=epoch,
-                                callbacks=[mc], verbose=0, validation_split=0.3)
+            model.fit(x_train, y_train, batch_size=40, epochs=epoch,
+                      callbacks=[mc], verbose=0, validation_split=0.3)
 
             test_data = scaled_data[training_data_len - window_size:, :]
 
@@ -97,9 +96,9 @@ def run(tech_list):
             rmse_mean = np.mean(rmse)
             print(rmse_mean)
 
-        # train = df[:training_data_len]
-        # valid = df[training_data_len:]
-        # plot_stock(train, valid, predictions)
+        train = df[:training_data_len]
+        valid = df[training_data_len:]
+        plot_stock(train, valid, predictions)
 
         last_window_size_days = df[-window_size:].filter(features).values
         last_window_size_days_scaled = scaler.transform(last_window_size_days)
@@ -112,4 +111,3 @@ def run(tech_list):
         pred_price = model.predict(X_test)
         pred_price = scaler.inverse_transform(pred_price)
         print(f"Predicted {features}: {pred_price[0]}, Real: {today[0]}")
-
