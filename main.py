@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from glob import glob
+from pullStock import pull
 
 import keras
 import matplotlib.pyplot as plt
@@ -26,6 +27,7 @@ def user_input_features(df):
 
 @st.cache
 def get_data():
+    pull()
     df = pd.read_csv('individual_stocks_5yr.csv')
     df['Date'] = pd.to_datetime(df['Date'])
     return df
