@@ -1,6 +1,4 @@
-import os
 from datetime import timedelta, datetime
-from glob import glob
 from prediction import run
 
 import keras
@@ -10,7 +8,6 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from sklearn.preprocessing import MinMaxScaler
-from tqdm import tqdm
 
 
 def user_input_features(df):
@@ -21,10 +18,10 @@ def user_input_features(df):
     key = st.sidebar.multiselect('Key', ('High', 'Low', 'Open', 'Close', 'Adj Close'), default='Close')
     start_date = st.sidebar.date_input('Start Date', pd.to_datetime(start_time))
     end_date = st.sidebar.date_input('End Date')
-    predict = st.sidebar.radio('Predict', ['No', 'Yes'])
+    # predict = st.sidebar.radio('Predict', ['No', 'Yes'])
     future_prediction = st.sidebar.slider('Days to predict', 1, 200, 10)
     return stocks_name, key, pd.to_datetime(start_date), pd.to_datetime(
-        end_date), stock_profit_range, predict, future_prediction
+        end_date), stock_profit_range, 'No', future_prediction
 
 
 @st.cache
@@ -101,7 +98,7 @@ else:
             last_window_size_days = df[df['Name'] == stock_name][-window_size:].filter(
                 ['High', 'Low', 'Open', 'Close']).values
             future = []
-            for i in tqdm(range(future_prediction)):
+            for i in range(future_prediction):
                 last_window_size_days_scaled = scaler.transform(last_window_size_days)
                 X_test = [last_window_size_days_scaled[i:]][0]
                 X_test = np.array(X_test)
