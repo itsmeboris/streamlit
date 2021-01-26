@@ -14,14 +14,15 @@ start_time = datetime(now_time.year - 5, now_time.month, now_time.day)
 def download_stock(stock):
     """ try to query the iex for a stock, if failed note with print """
     try:
-        print(stock)
+        # print(stock)
         stock_df = web.DataReader(stock, 'yahoo', start_time, now_time)
         stock_df['Name'] = stock
         output_name = os.path.join('individual_stocks_5yr', f'{stock}_data.csv')
         stock_df.to_csv(output_name)
     except:
+        pass
         # bad_names.append(stock)
-        print('bad: %s' % stock)
+        # print('bad: %s' % stock)
 
 
 def pull():
@@ -37,9 +38,9 @@ def pull():
 
     # set the maximum thread number
     max_workers = 50
+    os.makedirs('individual_stocks_5yr', exist_ok=True)
 
     workers = min(max_workers, len(s_and_p))  # in case a smaller number of stocks than threads was passed in
-    # download_stock(s_and_p)
     with futures.ThreadPoolExecutor(workers) as executor:
         executor.map(download_stock, s_and_p)
 
