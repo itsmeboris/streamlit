@@ -31,12 +31,12 @@ def plot_stock(train, valid, predictions):
     plt.show()
 
 
-def run():
+def run(tech_list):
     rdf = pd.read_csv('individual_stocks_5yr.csv')
     rdf['Date'] = pd.to_datetime(rdf['Date'])
     window_size = 80
     predicted = [s.split('.')[0][6:] for s in glob(os.path.join('model', '*.h5'))]
-    tech_list = [x for x in rdf.Name.unique() if x not in predicted]
+    tech_list = [x for x in tech_list if x not in predicted]
 
     for corp in tech_list:
         df = rdf[rdf['Name'] == corp][features]
@@ -114,5 +114,3 @@ def run():
         pred_price = scaler.inverse_transform(pred_price)
         print(f"Predicted {features}: {pred_price[0]}, Real: {today[0]}")
 
-
-run()

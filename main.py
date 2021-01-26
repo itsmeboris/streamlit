@@ -1,7 +1,7 @@
 import os
 from datetime import timedelta, datetime
 from glob import glob
-from pullStock import pull
+from prediction import run
 
 import keras
 import matplotlib.pyplot as plt
@@ -19,7 +19,7 @@ def user_input_features(df):
     stocks_name = st.sidebar.multiselect('Name', list(df['Name'].unique()), default=['AAPL'])
     stock_profit_range = st.sidebar.selectbox('Type', ('Day', 'Month', 'Quarter', 'Year'))
     key = st.sidebar.multiselect('Key', ('High', 'Low', 'Open', 'Close', 'Adj Close'), default='Close')
-    start_date = st.sidebar.date_input('Start Date', pd.to_datetime(start_time))  # pd.to_datetime('2011-01-21'))
+    start_date = st.sidebar.date_input('Start Date', pd.to_datetime(start_time))
     end_date = st.sidebar.date_input('End Date')
     predict = st.sidebar.radio('Predict', ['No', 'Yes'])
     future_prediction = st.sidebar.slider('Days to predict', 1, 200, 10)
@@ -33,9 +33,12 @@ def get_data():
     df['Date'] = pd.to_datetime(df['Date'])
     return df
 
+@st.cache
+def build_model(tech_list):
+    run(tech_list)
+
 
 stocks = get_data()
-models = [s.split('.')[0][6:] for s in glob(os.path.join('model', '*.h5'))]
 window_size = 80
 
 st.sidebar.header('User Input Features')
@@ -87,10 +90,12 @@ else:
 
         st.write(fig)
 
-    if predict == 'Yes' and any([stock_name in models for stock_name in stocks_name]):
+    if predict == 'Yes': #and any([stock_name in models for stock_name in stocks_name]):
+        build_model(stocks_name)
         st.write(f"""Now we want to predict for {future_prediction} days""")
         for stock_name in stocks_name:
-            if stock_name in models:
+            models = [s.split('.')[0][6:] for s in glob(os.path.join('model', '*.h5'))]
+            if stock_name not in models:
                 mdl = keras.models.load_model(f'model/{stock_name}.h5')
                 scaler = MinMaxScaler(feature_range=(0, 1))
                 features = ['High', 'Low', 'Open', 'Close']
